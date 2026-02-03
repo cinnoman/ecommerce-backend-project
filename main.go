@@ -7,11 +7,11 @@ import (
 )
 
 type Product struct {
-	ID          int
-	Name        string
-	Description string
-	Price       float64
-	ImgUrl      string
+	ID          int     `json:"id"`
+	Name        string  `json:"name"`
+	Description string  `json:"description"`
+	Price       float64 `json:"price"`
+	ImgUrl      string  `json:"imgUrl"`
 }
 
 var ProductList []Product
@@ -38,12 +38,48 @@ func getProducts(w http.ResponseWriter, r *http.Request) {
 	encoder.Encode(ProductList)
 }
 
+func createProduct(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-type", "application/json")
+	w.Header().Set("Access-Control-Allow-Header", "Content-Type")
+	w.Header().Set("Access-Control-Allow-Method", "POST")
+
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(200)
+		return
+	}
+
+	if r.Method != "POST" {
+		http.Error(w, "Please sent post request", http.StatusBadRequest)
+		return
+	}
+
+	var newProduct Product
+
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&newProduct)
+	if err != nil {
+		http.Error(w, "Please sent valid JSON data", http.StatusBadRequest)
+		return
+	}
+
+	newProduct.ID = len(ProductList) + 1
+
+	ProductList = append(ProductList, newProduct)
+
+	w.WriteHeader(201)
+	encoder := json.NewEncoder(w)
+	encoder.Encode(newProduct)
+}
+
 func main() {
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("/hello", helloHandler)
 	mux.HandleFunc("/about", aboutHandler)
 	mux.HandleFunc("/products", getProducts)
+	mux.HandleFunc("/create-products", createProduct)
 
 	fmt.Println("server running on port 8080")
 	err := http.ListenAndServe(":8080", mux)
