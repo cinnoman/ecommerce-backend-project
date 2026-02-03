@@ -25,6 +25,10 @@ func aboutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func getProducts(w http.ResponseWriter, r *http.Request) {
+
+	w.Header().Set("Access-Control-Allow-Origin", "*")
+	w.Header().Set("Content-type", "application/json")
+
 	if r.Method != "GET" {
 		http.Error(w, "Please send http get request", http.StatusBadRequest)
 		return
