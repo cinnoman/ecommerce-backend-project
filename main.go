@@ -1,49 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 )
-
-type Product struct {
-	ID          int     `json:"id"`
-	Name        string  `json:"name"`
-	Description string  `json:"description"`
-	Price       float64 `json:"price"`
-	ImgUrl      string  `json:"imgUrl"`
-}
-
-
-func sendData(w http.ResponseWriter, data interface{}, statusCode int) {
-	w.WriteHeader(statusCode)
-	encoder := json.NewEncoder(w)
-	encoder.Encode(data)
-}
-
-var ProductList []Product
-
-func getProducts(w http.ResponseWriter, r *http.Request) {
-	sendData(w, ProductList, 200)
-}
-
-
-func createProduct(w http.ResponseWriter, r *http.Request) {
-	var newProduct Product
-
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&newProduct)
-	if err != nil {
-		http.Error(w, "Please sent valid JSON data", http.StatusBadRequest)
-		return
-	}
-
-	newProduct.ID = len(ProductList) + 1
-
-	ProductList = append(ProductList, newProduct)
-
-	sendData(w, newProduct, 201)
-}
 
 func main() {
 	mux := http.NewServeMux()
@@ -58,24 +18,6 @@ func main() {
 		fmt.Println("Error in starting the server", err)
 	}
 }
-
-func globalRouter(next *http.ServeMux) http.Handler {
-	handlerCors := func (w http.ResponseWriter, r *http.Request){
-		w.Header().Set("Access-Control-Allow-Origin", "*")
-		w.Header().Set("Content-type", "application/json")
-		w.Header().Set("Access-Control-Allow-Header", "Content-Type")
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
-
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(200)
-			return 
-		}
-		next.ServeHTTP(w, r)
-	}
-
-	return http.HandlerFunc(handlerCors)
-} 
-
 
 func init() {
 	prd1 := Product{
