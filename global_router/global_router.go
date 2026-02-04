@@ -1,8 +1,8 @@
-package main
+package global_router
 
 import "net/http"
 
-func globalRouter(next *http.ServeMux) http.Handler {
+func GlobalRouter(next *http.ServeMux) http.Handler {
 	handleAllReq := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 		w.Header().Set("Content-type", "application/json")
