@@ -14,12 +14,6 @@ type Product struct {
 	ImgUrl      string  `json:"imgUrl"`
 }
 
-func handlerCors(w http.ResponseWriter) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Content-type", "application/json")
-	w.Header().Set("Access-Control-Allow-Header", "Content-Type")
-	w.Header().Set("Access-Control-Allow-Method", "POST")
-}
 
 func sendData(w http.ResponseWriter, data interface{}, statusCode int) {
 	w.WriteHeader(statusCode)
@@ -30,22 +24,11 @@ func sendData(w http.ResponseWriter, data interface{}, statusCode int) {
 var ProductList []Product
 
 func getProducts(w http.ResponseWriter, r *http.Request) {
-	handlerCors(w)
-	if r.Method == "OPTIONS" {
-		w.WriteHeader(200)
-		return
-	}
 	sendData(w, ProductList, 200)
 }
 
 
 func createProduct(w http.ResponseWriter, r *http.Request) {
-
-	handlerCors(w)
-	if r.Method == "OPTIONS" {
-		w.WriteHeader(200)
-		return
-	}
 	var newProduct Product
 
 	decoder := json.NewDecoder(r.Body)
@@ -66,16 +49,33 @@ func main() {
 	mux := http.NewServeMux()
 
 	mux.Handle("GET /products", http.HandlerFunc(getProducts))
-	mux.Handle("OPTIONS /products", http.HandlerFunc(getProducts))
-	mux.Handle("OPTIONS /create-products", http.HandlerFunc(createProduct))
 	mux.Handle("POST /create-products", http.HandlerFunc(createProduct))
 
+	globalRouterHandler := globalRouter(mux)
 	fmt.Println("server running on port 8080")
-	err := http.ListenAndServe(":8080", mux)
+	err := http.ListenAndServe(":8080", globalRouterHandler)
 	if err != nil {
 		fmt.Println("Error in starting the server", err)
 	}
 }
+
+func globalRouter(next *http.ServeMux) http.Handler {
+	handlerCors := func (w http.ResponseWriter, r *http.Request){
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+		w.Header().Set("Content-type", "application/json")
+		w.Header().Set("Access-Control-Allow-Header", "Content-Type")
+		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(200)
+			return 
+		}
+		next.ServeHTTP(w, r)
+	}
+
+	return http.HandlerFunc(handlerCors)
+} 
+
 
 func init() {
 	prd1 := Product{
