@@ -14,47 +14,38 @@ type Product struct {
 	ImgUrl      string  `json:"imgUrl"`
 }
 
-var ProductList []Product
-
-func helloHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hellow world")
-}
-
-func aboutHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "I am noman")
-}
-
-func getProducts(w http.ResponseWriter, r *http.Request) {
-
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Content-type", "application/json")
-
-	if r.Method != "GET" {
-		http.Error(w, "Please send http get request", http.StatusBadRequest)
-		return
-	}
-
-	encoder := json.NewEncoder(w)
-	encoder.Encode(ProductList)
-}
-
-func createProduct(w http.ResponseWriter, r *http.Request) {
-
+func handlerCors(w http.ResponseWriter) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Content-type", "application/json")
 	w.Header().Set("Access-Control-Allow-Header", "Content-Type")
 	w.Header().Set("Access-Control-Allow-Method", "POST")
+}
 
+func sendData(w http.ResponseWriter, data interface{}, statusCode int) {
+	w.WriteHeader(statusCode)
+	encoder := json.NewEncoder(w)
+	encoder.Encode(data)
+}
+
+var ProductList []Product
+
+func getProducts(w http.ResponseWriter, r *http.Request) {
+	handlerCors(w)
 	if r.Method == "OPTIONS" {
 		w.WriteHeader(200)
 		return
 	}
+	sendData(w, ProductList, 200)
+}
 
-	if r.Method != "POST" {
-		http.Error(w, "Please sent post request", http.StatusBadRequest)
+
+func createProduct(w http.ResponseWriter, r *http.Request) {
+
+	handlerCors(w)
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(200)
 		return
 	}
-
 	var newProduct Product
 
 	decoder := json.NewDecoder(r.Body)
@@ -68,18 +59,16 @@ func createProduct(w http.ResponseWriter, r *http.Request) {
 
 	ProductList = append(ProductList, newProduct)
 
-	w.WriteHeader(201)
-	encoder := json.NewEncoder(w)
-	encoder.Encode(newProduct)
+	sendData(w, newProduct, 201)
 }
 
 func main() {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/hello", helloHandler)
-	mux.HandleFunc("/about", aboutHandler)
-	mux.HandleFunc("/products", getProducts)
-	mux.HandleFunc("/create-products", createProduct)
+	mux.Handle("GET /products", http.HandlerFunc(getProducts))
+	mux.Handle("OPTIONS /products", http.HandlerFunc(getProducts))
+	mux.Handle("OPTIONS /create-products", http.HandlerFunc(createProduct))
+	mux.Handle("POST /create-products", http.HandlerFunc(createProduct))
 
 	fmt.Println("server running on port 8080")
 	err := http.ListenAndServe(":8080", mux)
