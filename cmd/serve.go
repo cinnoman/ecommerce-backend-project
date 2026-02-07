@@ -11,11 +11,33 @@ import (
 func Serve() {
 	mux := http.NewServeMux()
 
-	mux.Handle("GET /noman", middleware.Logger(http.HandlerFunc(handlers.Test)))
+	mngr := middleware.NewManager()
+	mngr.Use(middleware.Logger, middleware.Hudai)
 
-	mux.Handle("GET /products", middleware.Hudai(middleware.Logger(http.HandlerFunc(handlers.GetProducts))))
-	mux.Handle("POST /products-c", middleware.Logger(http.HandlerFunc(handlers.CreateProduct)))
-	mux.Handle("GET /products/{id}", middleware.Logger(http.HandlerFunc(handlers.GetProductByID)))
+
+	mux.Handle("GET /noman", mngr.With(
+		http.HandlerFunc(
+			handlers.Test,
+		),
+	))
+
+	mux.Handle("GET /products", mngr.With(
+		http.HandlerFunc(
+			handlers.GetProducts,
+		),
+	))
+
+	mux.Handle("POST /products", mngr.With(
+		http.HandlerFunc(
+			handlers.CreateProduct,
+		),
+	))
+	
+	mux.Handle("GET /products/{id}", mngr.With(
+		http.HandlerFunc(
+			handlers.GetProductByID,
+		),
+	))
 
 	globalRouterHandler := global_router.GlobalRouter(mux)
 	fmt.Println("Server running on port 8080")
