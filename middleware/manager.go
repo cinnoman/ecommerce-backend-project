@@ -32,3 +32,7 @@ func (mngr *Manager) With(next http.Handler, middlewares ...Middleware) http.Han
 
 	return n
 }
+
+func amni(){
+	
+}
