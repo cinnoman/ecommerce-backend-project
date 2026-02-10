@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"ecommerce/config"
 	"ecommerce/database"
 	"ecommerce/util"
 	"encoding/json"
@@ -28,5 +29,20 @@ func LoginUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	util.SendData(w, user, http.StatusOK)
+	cnf := config.GetConfig()
+
+	accessToken, err := util.CreateJwt(cnf.JwtSecretKey, util.Payload{
+		Sub: user.ID,
+		FirstName: user.FirstName,
+		LastName: user.LastName,
+		Email: user.Email,
+		IsShopOwner: user.IsShopOwner,
+	})
+
+	if err != nil {
+		util.SendError(w, "Not authorized", http.StatusMethodNotAllowed)
+		return
+	}
+
+	util.SendData(w, accessToken, http.StatusOK)
 }
