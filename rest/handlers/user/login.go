@@ -1,4 +1,4 @@
-package handlers
+package user
 
 import (
 	"ecommerce/config"
@@ -14,7 +14,7 @@ type credential struct {
 	Password string `json:"password"`
 }
 
-func LoginUser(w http.ResponseWriter, r *http.Request) {
+func (h *Handler)  LoginUser(w http.ResponseWriter, r *http.Request) {
 	var reqLogin credential
 
 	decoder := json.NewDecoder(r.Body)
