@@ -9,15 +9,15 @@ type Product struct {
 }
 
 type ProductRepo interface {
-	Create()
-	Get()
-	List()
-	Update()
-	Delete()
+	Get(pId int) (*Product, error)
+	List() ([]*Product, error)
+	Create(newProduct Product) (*Product, error)
+	Update(product Product) (*Product, error)
+	Delete(pId int) error
 }
 
 type productRepo struct {
-	productList []Product
+	productList []*Product
 }
 
 func NewProductRepo() ProductRepo {
@@ -26,29 +26,50 @@ func NewProductRepo() ProductRepo {
 	return repo
 }
 
-
-func (r *productRepo) Create() {
-
+func (r *productRepo) Create(newProduct Product) (*Product, error) {
+	newProduct.ID = len(r.productList) + 1
+	r.productList = append(r.productList, &newProduct)
+	return &newProduct, nil
 }
 
-func (r *productRepo) Get() {
-
+func (r *productRepo) Get(pId int) (*Product, error) {
+	for _, product := range r.productList {
+		if product.ID == pId {
+			return product, nil
+		}
+	}
+	return nil, nil
 }
 
-func (r *productRepo) List() {
-
+func (r *productRepo) List() ([]*Product, error) {
+	return r.productList, nil
 }
 
-func (r *productRepo) Update() {
+func (r *productRepo) Update(product Product) (*Product, error) {
+	for idx, p := range r.productList {
+		if p.ID == product.ID {
+			r.productList[idx] = &product 
+		}
+	}
 
+	return &product, nil
 }
 
-func (r *productRepo) Delete() {
+func (r *productRepo) Delete(pId int) error {
+	var tempList []*Product
 
+	for _, product := range r.productList {
+		if product.ID != pId {
+			tempList = append(tempList, product)
+		}
+	}
+
+	r.productList = tempList
+	return nil
 }
 
-func  getInitialProduct(r *productRepo) {
-	prd1 := Product{
+func getInitialProduct(r *productRepo) {
+	prd1 := &Product{
 		ID:          1,
 		Name:        "Mango",
 		Description: "Mango is tasty",
@@ -56,7 +77,7 @@ func  getInitialProduct(r *productRepo) {
 		ImgUrl:      "https://example.com/images/mango.jpg",
 	}
 
-	prd2 := Product{
+	prd2 := &Product{
 		ID:          2,
 		Name:        "Apple",
 		Description: "Fresh and crispy apple",
@@ -64,7 +85,7 @@ func  getInitialProduct(r *productRepo) {
 		ImgUrl:      "https://example.com/images/apple.jpg",
 	}
 
-	prd3 := Product{
+	prd3 := &Product{
 		ID:          3,
 		Name:        "Banana",
 		Description: "Sweet yellow banana",
@@ -72,7 +93,7 @@ func  getInitialProduct(r *productRepo) {
 		ImgUrl:      "https://example.com/images/banana.jpg",
 	}
 
-	prd4 := Product{
+	prd4 := &Product{
 		ID:          4,
 		Name:        "Orange",
 		Description: "Juicy orange",
@@ -80,7 +101,7 @@ func  getInitialProduct(r *productRepo) {
 		ImgUrl:      "https://example.com/images/orange.jpg",
 	}
 
-	prd5 := Product{
+	prd5 := &Product{
 		ID:          5,
 		Name:        "Pineapple",
 		Description: "Tropical pineapple",
@@ -88,7 +109,7 @@ func  getInitialProduct(r *productRepo) {
 		ImgUrl:      "https://example.com/images/pineapple.jpg",
 	}
 
-	prd6 := Product{
+	prd6 := &Product{
 		ID:          6,
 		Name:        "Strawberry",
 		Description: "Fresh strawberries",
