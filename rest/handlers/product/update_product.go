@@ -1,7 +1,6 @@
 package product
 
 import (
-	//"ecommerce/database"
 	"ecommerce/repo"
 	"ecommerce/util"
 	"encoding/json"
