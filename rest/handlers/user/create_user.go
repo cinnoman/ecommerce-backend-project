@@ -1,22 +1,42 @@
 package user
 
 import (
-	"ecommerce/database"
+	"ecommerce/repo"
 	"ecommerce/util"
 	"encoding/json"
 	"net/http"
 )
 
-func (h *Handler)  CreateUser(w http.ResponseWriter, r *http.Request) {
-	var newUser database.User
+type NewUser struct {
+	FirstName   string `json:"firstName"`
+	LastName    string `json:"lastName"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	IsShopOwner bool   `json:"isShopOwner"`
+}
+
+func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
+	var req NewUser
 
 	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&newUser)
+	err := decoder.Decode(&req)
 	if err != nil {
 		http.Error(w, "Please sent valid JSON data", http.StatusBadRequest)
 		return
 	}
 
-	usr := newUser.Store()
-	util.SendData(w, usr, http.StatusCreated)
+	newUser, err := h.userRepo.Create(repo.User{
+		FirstName:   req.FirstName,
+		LastName:    req.LastName,
+		Email:       req.Email,
+		Password:    req.Password,
+		IsShopOwner: req.IsShopOwner,
+	})
+
+	if err != nil {
+		util.SendError(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+
+	util.SendData(w, newUser, http.StatusCreated)
 }

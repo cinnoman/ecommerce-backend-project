@@ -1,20 +1,17 @@
 package user
 
 import (
-	"ecommerce/config"
-	"ecommerce/database"
 	"ecommerce/util"
 	"encoding/json"
 	"net/http"
 )
 
-
 type credential struct {
-	Email string `json:"email"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
-func (h *Handler)  LoginUser(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) LoginUser(w http.ResponseWriter, r *http.Request) {
 	var reqLogin credential
 
 	decoder := json.NewDecoder(r.Body)
@@ -23,19 +20,21 @@ func (h *Handler)  LoginUser(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Invalid Request Data", http.StatusBadRequest)
 	}
 
-	user := database.Find(reqLogin.Email, reqLogin.Password)
+	user, err := h.userRepo.Find(reqLogin.Email, reqLogin.Password)
+	if err != nil {
+		util.SendError(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
 	if user == nil {
 		util.SendError(w, "Invalid Credentials", http.StatusBadRequest)
 		return
 	}
 
-	cnf := config.GetConfig()
-
-	accessToken, err := util.CreateJwt(cnf.JwtSecretKey, util.Payload{
-		Sub: user.ID,
-		FirstName: user.FirstName,
-		LastName: user.LastName,
-		Email: user.Email,
+	accessToken, err := util.CreateJwt(h.cnf.JwtSecretKey, util.Payload{
+		Sub:         user.ID,
+		FirstName:   user.FirstName,
+		LastName:    user.LastName,
+		Email:       user.Email,
 		IsShopOwner: user.IsShopOwner,
 	})
 

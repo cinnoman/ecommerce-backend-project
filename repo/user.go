@@ -32,12 +32,22 @@ func (r *userRepo) Create(user User) (*User, error) {
 	return &user, nil
 }
 
+// func (r *userRepo) Find(email, pass string) (*User, error) {
+// 	for _, user := range r.userList {
+// 		if email == user.Email && pass == user.Password {
+// 			return &user, nil
+// 		}
+// 	}
+
+// 	return nil, nil
+// }
+
 func (r *userRepo) Find(email, pass string) (*User, error) {
-	for _, user := range r.userList {
-		if email == user.Email && pass == user.Password {
-			return &user, nil
+	for i := range r.userList {
+		if email == r.userList[i].Email && pass == r.userList[i].Password {
+			return &r.userList[i], nil
 		}
 	}
-
 	return nil, nil
 }
+
