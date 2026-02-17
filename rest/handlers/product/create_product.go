@@ -1,7 +1,7 @@
 package product
 
 import (
-	"ecommerce/repo"
+	"ecommerce/domain"
 	"ecommerce/util"
 	"encoding/json"
 	"net/http"
@@ -23,14 +23,14 @@ func (h *Handler) CreateProduct(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Please sent valid JSON data", http.StatusBadRequest)
 		return
 	}
-	
-	createdProduct, err := h.productRepo.Create(repo.Product{
-		Name: req.Name,
+
+	createdProduct, err := h.svc.Create(domain.Product{
+		Name:        req.Name,
 		Description: req.Description,
-		Price: req.Price,
-		ImgUrl: req.ImgUrl,
+		Price:       req.Price,
+		ImgUrl:      req.ImgUrl,
 	})
-	
+
 	if err != nil {
 		util.SendError(w, "Internal Server Error", http.StatusInternalServerError)
 		return

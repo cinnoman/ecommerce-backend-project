@@ -1,5 +1,6 @@
 package domain
 
+//entity
 type User struct {
 	ID          int    `db:"id" json:"id"`
 	FirstName   string `db:"first_name" json:"firstName"`
