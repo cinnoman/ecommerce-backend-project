@@ -13,7 +13,6 @@ func NewService(prdctRepo ProductRepo) Service {
 }
 
 func (svc *service) Create(newProduct domain.Product) (*domain.Product, error) {
-	//return svc.prdctRepo.Create(newProduct)
 	prdct, err := svc.prdctRepo.Create(newProduct)
 	if err != nil {
 		return nil, err
@@ -40,8 +39,8 @@ func (svc *service) Get(pId int) (*domain.Product, error) {
 }
 
 
-func (svc *service) List() ([]*domain.Product, error) {
-	prdct, err := svc.prdctRepo.List()
+func (svc *service) List(page, limit int) ([]*domain.Product, error) {
+	prdct, err := svc.prdctRepo.List(page, limit)
 	if err != nil {
 		return nil, err
 	}
@@ -51,6 +50,10 @@ func (svc *service) List() ([]*domain.Product, error) {
 	}
 
 	return prdct, nil
+}
+
+func (svc *service) Count() (int, error){
+	return svc.prdctRepo.Count()
 }
 
 func (svc *service) Update(product domain.Product) (*domain.Product, error) {
